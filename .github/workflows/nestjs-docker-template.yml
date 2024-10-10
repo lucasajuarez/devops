@@ -15,11 +15,23 @@ on:
       image_name: #Provisorio, cuando vayamos a ECR no va a ser falta
         required: true
         type: string
-      image_version: #Provisorio, cuando vayamos a ECR no va a ser falta
+      image_tag: #Provisorio, cuando vayamos a ECR no va a ser falta
         required: true
         type: string              
 
 jobs:
+    
+  validate-tag:
+    name: Validate Tag
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check if tag matches X.X.X pattern
+        run: |
+          if [[ ! "${{ inputs.image_tag }}" =~ ^[0-99]+\.[0-99]+\.[0-99]+$ ]]; then
+            echo "Invalid tag format: ${{ inputs.image_tag }}. The tag must be in the format X.X.X (e.g., 1.0.0)."
+            exit 1
+          fi
+              
   build:
     name: Build Docker Image
     runs-on: ubuntu-latest
