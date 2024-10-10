@@ -44,16 +44,24 @@ jobs:
           fi
           echo "${{ inputs.image_tag }} is a valid Tag!"      
 
-      - name: Build Docker image
+      - name: Install Dependencies
         run: |
           docker build \
             --file Dockerfile \
             --target builder \
             -t ${{ inputs.dockerhub_username }}/${{ inputs.image_name }}:builder .
+
+      - name: Run Unit Test
+        run: |
+          docker run --rm ${{ inputs.dockerhub_username }}/${{ inputs.image_name }}:builder npm run test            
+
+      - name: Build Docker image
+        run: |
           docker build \
             --file Dockerfile \
             --target production \
-            -t ${{ inputs.dockerhub_username }}/${{ inputs.image_name }}:${{ inputs.image_tag }} .
+            -t ${{ inputs.dockerhub_username }}/${{ inputs.image_name }}:${{ inputs.image_tag }} .            
+           
 
       - name: Push Docker image
         run: |
