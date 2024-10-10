@@ -53,8 +53,8 @@ jobs:
           docker build \
             --file Dockerfile \
             --target production \
-            -t ${{ inputs.dockerhub_username }}/${{ inputs.image_name }}:${{ inputs.image_version }} .
+            -t ${{ inputs.dockerhub_username }}/${{ inputs.image_name }}:${{ inputs.image_tag }} .
 
       - name: Push Docker image
         run: |
-          docker push ${{ inputs.dockerhub_username }}/${{ inputs.image_name }}:${{ inputs.image_version }}
+          docker push ${{ inputs.dockerhub_username }}/${{ inputs.image_name }}:${{ inputs.image_tag }}
