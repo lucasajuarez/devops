@@ -1,0 +1,46 @@
+name: NestJS Docker Build and Push Template
+
+on:
+  workflow_call:
+    inputs:
+      branch:
+        required: true
+        type: string
+      dockerhub_username: #Provisorio, cuando vayamos a ECR no va a ser falta
+        required: true
+        type: string
+      dockerhub_token: #Provisorio, cuando vayamos a ECR no va a ser falta
+        required: true
+        type: secret
+
+jobs:
+  build:
+    name: Build Docker Image
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2
+
+      - name: Log in to Docker Hub
+        uses: docker/login-action@v2
+        with:
+          username: ${{ inputs.dockerhub_username }}
+          password: ${{ inputs.dockerhub_token }}
+
+      - name: Build Docker image
+        run: |
+          docker build \
+            --file Dockerfile \
+            --target builder \
+            -t ${{ inputs.dockerhub_username }}/nestjs-service:builder .
+          docker build \
+            --file Dockerfile \
+            --target production \
+            -t ${{ inputs.dockerhub_username }}/nestjs-service:latest .
+
+      - name: Push Docker image
+        run: |
+          docker push ${{ inputs.dockerhub_username }}/nestjs-service:latest
