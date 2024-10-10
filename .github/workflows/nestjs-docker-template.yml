@@ -20,18 +20,6 @@ on:
         type: string              
 
 jobs:
-    
-  validate-tag:
-    name: Validate Tag
-    runs-on: ubuntu-latest
-    steps:
-      - name: Check if tag matches X.X.X pattern
-        run: |
-          if [[ ! "${{ inputs.image_tag }}" =~ ^[0-99]+\.[0-99]+\.[0-99]+$ ]]; then
-            echo "Invalid tag format: ${{ inputs.image_tag }}. The tag must be in the format X.X.X (e.g., 1.0.0)."
-            exit 1
-          fi
-              
   build:
     name: Build Docker Image
     runs-on: ubuntu-latest
@@ -47,6 +35,14 @@ jobs:
         with:
           username: ${{ inputs.dockerhub_username }}
           password: ${{ inputs.dockerhub_token }}
+
+      - name: Validate Image Tag
+        run: |
+          if [[ ! "${{ inputs.image_tag }}" =~ ^[0-99]+\.[0-99]+\.[0-99]+$ ]]; then
+            echo "Invalid tag format: ${{ inputs.image_tag }}. Tags must be in the format X.X.X (e.g., 1.0.0)."
+            exit 1
+          fi
+          echo "${{ inputs.image_tag }} is a valid Tag!"      
 
       - name: Build Docker image
         run: |
