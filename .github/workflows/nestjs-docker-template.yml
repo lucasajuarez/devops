@@ -11,7 +11,7 @@ on:
         type: string
       dockerhub_token: #Provisorio, cuando vayamos a ECR no va a ser falta
         required: true
-        type: secret
+        type: string
 
 jobs:
   build:
