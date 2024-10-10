@@ -12,6 +12,12 @@ on:
       dockerhub_token: #Provisorio, cuando vayamos a ECR no va a ser falta
         required: true
         type: string
+      image_name: #Provisorio, cuando vayamos a ECR no va a ser falta
+        required: true
+        type: string
+      image_version: #Provisorio, cuando vayamos a ECR no va a ser falta
+        required: true
+        type: string              
 
 jobs:
   build:
@@ -35,12 +41,12 @@ jobs:
           docker build \
             --file Dockerfile \
             --target builder \
-            -t ${{ inputs.dockerhub_username }}/nestjs-service:builder .
+            -t ${{ inputs.dockerhub_username }}/${{ inputs.image_name }}:builder .
           docker build \
             --file Dockerfile \
             --target production \
-            -t ${{ inputs.dockerhub_username }}/nestjs-service:latest .
+            -t ${{ inputs.dockerhub_username }}/${{ inputs.image_name }}:${{ inputs.image_version }} .
 
       - name: Push Docker image
         run: |
-          docker push ${{ inputs.dockerhub_username }}/nestjs-service:latest
+          docker push ${{ inputs.dockerhub_username }}/${{ inputs.image_name }}:${{ inputs.image_version }}
