@@ -12,7 +12,7 @@ on:
 
 jobs:
   build:
-    name: Build Angular Front
+    name: Deploy Angular Front Into S3 Bucket
     runs-on: ubuntu-latest
    
     steps:
@@ -43,4 +43,5 @@ jobs:
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           AWS_REGION: ${{ inputs.s3_region }}  # Change to your AWS region
         run: |
+          echo $AWS_ACCESS_KEY_ID
           aws s3 sync ${{ github.workspace}}/artifact/*/* s3://${{ inputs.s3_bucket_name }} --delete
