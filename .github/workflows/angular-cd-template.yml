@@ -1,11 +1,11 @@
 name: Angular Static Website S3 Upload Template
 
-# on:
-#   workflow_call:
-#     inputs:
-#       branch:
-#         required: true
-#         type: string           
+on:
+  workflow_call:
+    inputs:
+      branch:
+        required: true
+        type: string           
 
 jobs:
   build:
