@@ -1,0 +1,32 @@
+name: Angular Static Website S3 Upload Template
+
+# on:
+#   workflow_call:
+#     inputs:
+#       branch:
+#         required: true
+#         type: string           
+
+jobs:
+  build:
+    name: Build Angular Front
+    runs-on: ubuntu-latest
+   
+    steps:
+      - name: Download artifact
+        uses: actions/download-artifact@v4.1.8
+        with:
+          name: frontend-artifact
+          path: ./artifact
+
+      - name: Test Download Artifact
+        run: |
+          ls -l ./artifact       
+
+      # - name: Upload to S3
+      #   env:
+      #     AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+      #     AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+      #     AWS_REGION: 'us-east-1'  # Change to your AWS region
+      #   run: |
+      #     aws s3 sync ./artifact s3://YOUR_BUCKET_NAME --delete
