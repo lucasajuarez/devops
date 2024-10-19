@@ -19,9 +19,11 @@ jobs:
           name: frontend-artifact
           path: ./artifact
 
-      - name: Test Download Artifact
+      - name: Decompress Artifact
         run: |
-          ls -l ./artifact       
+          ls -l ./artifact
+          unzip dist.zip
+          ls -l ./artifact
 
       # - name: Upload to S3
       #   env:
