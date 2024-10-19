@@ -22,7 +22,7 @@ jobs:
       - name: Decompress Artifact
         run: |
           ls -l ./artifact
-          unzip dist.zip
+          unzip ./artifact/dist.zip -d ./artifact
           ls -l ./artifact
 
       # - name: Upload to S3
