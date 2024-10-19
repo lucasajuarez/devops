@@ -8,13 +8,14 @@ on:
         type: string
       s3_region:
         required: true
-        type: string                    
+        type: string        
+                  
 
 jobs:
-  build:
+  deploy:
     name: Deploy Angular Front Into S3 Bucket
     runs-on: ubuntu-latest
-   
+    environment: Sandbox
     steps:
       - name: Download artifact
         uses: actions/download-artifact@v4.1.8
@@ -41,7 +42,6 @@ jobs:
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          AWS_REGION: ${{ inputs.s3_region }}  # Change to your AWS region
+          AWS_REGION: ${{ inputs.s3_region }}
         run: |
-          echo $AWS_ACCESS_KEY_ID
           aws s3 sync ${{ github.workspace}}/artifact/*/* s3://${{ inputs.s3_bucket_name }} --delete
