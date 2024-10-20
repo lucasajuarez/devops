@@ -8,13 +8,7 @@ on:
         type: string
       s3_region:
         required: true
-        type: string
-      aws_access_key_id:
-        required: true
-        type: string
-      aws_secret_access_key:
-        required: true
-        type: string          
+        type: string     
                   
 
 jobs:
@@ -46,8 +40,8 @@ jobs:
 
       - name: Upload to S3
         env:
-          AWS_ACCESS_KEY_ID: ${{ inputs.aws_access_key_id }}
-          AWS_SECRET_ACCESS_KEY: ${{ inputs.aws_secret_access_key }}
+          AWS_ACCESS_KEY_ID: ${{ secrets.aws_access_key_id }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.aws_secret_access_key }}
           AWS_REGION: ${{ inputs.s3_region }}
         run: |
           aws s3 sync ${{ github.workspace}}/artifact/*/* s3://${{ inputs.s3_bucket_name }} --delete
