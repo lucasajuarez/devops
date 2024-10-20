@@ -13,13 +13,16 @@ on:
         type: string
       s3_region:
         required: true
-        type: string          
+        type: string     
+      environment:
+        required: true
+        type: string                
 
 jobs:
   deploy:
     name: Deploy Angular Front Into S3 Bucket
     runs-on: ubuntu-latest
-    environment: sandbox
+    environment: ${{inputs.environment}}
     steps:
       - name: Download artifact
         uses: actions/download-artifact@v4.1.8
