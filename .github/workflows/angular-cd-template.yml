@@ -8,8 +8,7 @@ on:
         type: string
       s3_region:
         required: true
-        type: string     
-                  
+        type: string          
 
 jobs:
   deploy:
