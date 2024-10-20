@@ -3,9 +3,9 @@ name: Angular Static Website S3 Upload Template
 on:
   workflow_call:
     secrets:
-      AWS_ACCESS_KEY_ID:
+      aws_access_key_id:
         required: true
-      AWS_SECRET_ACCESS_KEY:
+      aws_secret_access_key:
         required: true  
     inputs:
       s3_bucket_name:
@@ -43,8 +43,8 @@ jobs:
 
       - name: Upload to S3
         env:
-          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          AWS_ACCESS_KEY_ID: ${{ secrets.aws_access_key_id }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.aws_secret_access_key }}
           AWS_REGION: ${{ inputs.s3_region }}
         run: |
           aws s3 sync ${{ github.workspace}}/artifact/*/* s3://${{ inputs.s3_bucket_name }} --delete
