@@ -19,7 +19,7 @@ jobs:
   deploy:
     name: Deploy Angular Front Into S3 Bucket
     runs-on: ubuntu-latest
-    environment: 'Sandbox'
+    environment: sandbox
     steps:
       - name: Download artifact
         uses: actions/download-artifact@v4.1.8
