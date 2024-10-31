@@ -2,22 +2,27 @@ name: NestJS Docker Build and Push Template
 
 on:
   workflow_call:
+    secrets:
+      aws_access_key_id:
+        required: true
+      aws_secret_access_key:
+        required: true     
     inputs:
       branch:
         required: true
         type: string
-      dockerhub_username: #Provisorio, cuando vayamos a ECR no va a ser falta
+      aws_region: #Provisorio, cuando vayamos a ECR no va a ser falta
+        required: true
+        type: string        
+      image_name:
         required: true
         type: string
-      dockerhub_token: #Provisorio, cuando vayamos a ECR no va a ser falta
+      image_tag:
         required: true
-        type: string
-      image_name: #Provisorio, cuando vayamos a ECR no va a ser falta
+        type: string   
+      aws_account:
         required: true
-        type: string
-      image_tag: #Provisorio, cuando vayamos a ECR no va a ser falta
-        required: true
-        type: string              
+        type: string           
 
 jobs:
   build:
@@ -30,39 +35,41 @@ jobs:
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v2
 
-      - name: Log in to Docker Hub
-        uses: docker/login-action@v2
-        with:
-          username: ${{ inputs.dockerhub_username }}
-          password: ${{ inputs.dockerhub_token }}
-
       - name: Validate Image Tag
         run: |
           if [[ ! "${{ inputs.image_tag }}" =~ ^[0-99]+\.[0-99]+\.[0-99]+$ ]]; then
             echo "Invalid tag format: ${{ inputs.image_tag }}. Tags must be in the format X.X.X (e.g., 1.0.0)."
             exit 1
           fi
-          echo "${{ inputs.image_tag }} is a valid Tag!"      
+          echo "${{ inputs.image_tag }} is a valid Tag!"
+
+      - name: Docker Login
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.aws_access_key_id }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.aws_secret_access_key }}
+          AWS_REGION: ${{ inputs.aws_region }}        
+        run: |
+          aws ecr get-login-password --region ${{ inputs.aws_region }} | docker login --username AWS --password-stdin ${{ inputs.aws_account }}.dkr.ecr.us-east-1.amazonaws.com          
 
       - name: Install Dependencies
         run: |
           docker build \
             --file Dockerfile \
             --target builder \
-            -t ${{ inputs.dockerhub_username }}/${{ inputs.image_name }}:builder .
+            -t ${{ inputs.image_name }}:builder .
 
       - name: Run Unit Test
         run: |
-          docker run --rm ${{ inputs.dockerhub_username }}/${{ inputs.image_name }}:builder npm run test            
+          docker run --rm ${{ inputs.image_name }}:builder npm run test            
 
       - name: Build Docker image
         run: |
           docker build \
             --file Dockerfile \
             --target production \
-            -t ${{ inputs.dockerhub_username }}/${{ inputs.image_name }}:${{ inputs.image_tag }} .            
-           
+            -t ${{ inputs.aws_account }}.dkr.ecr.us-east-1.amazonaws.com/${{ inputs.image_name }}:${{ inputs.image_tag }} .
+          
 
       - name: Push Docker image
         run: |
-          docker push ${{ inputs.dockerhub_username }}/${{ inputs.image_name }}:${{ inputs.image_tag }}
+          docker push ${{ inputs.aws_account }}.dkr.ecr.us-east-1.amazonaws.com/${{ inputs.image_name }}:${{ inputs.image_tag }}
