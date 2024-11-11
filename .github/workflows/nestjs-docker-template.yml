@@ -1,12 +1,7 @@
 name: NestJS Docker Build and Push Template
 
 on:
-  workflow_call:
-    secrets:
-      aws_access_key_id:
-        required: true
-      aws_secret_access_key:
-        required: true     
+  workflow_call:  
     inputs:
       branch:
         required: true
@@ -22,7 +17,14 @@ on:
         type: string   
       aws_account:
         required: true
-        type: string           
+        type: string
+      roletoassume:
+        required: true
+        type: string
+
+permissions:
+  contents: read
+  id-token: write
 
 jobs:
   build:
@@ -43,13 +45,16 @@ jobs:
           fi
           echo "${{ inputs.image_tag }} is a valid Tag!"
 
-      - name: Docker Login
-        env:
-          AWS_ACCESS_KEY_ID: ${{ secrets.aws_access_key_id }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.aws_secret_access_key }}
-          AWS_REGION: ${{ inputs.aws_region }}        
-        run: |
-          aws ecr get-login-password --region ${{ inputs.aws_region }} | docker login --username AWS --password-stdin ${{ inputs.aws_account }}.dkr.ecr.us-east-1.amazonaws.com          
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          audience: sts.amazonaws.com
+          role-to-assume: arn:aws:iam::${{ inputs.aws_account }}:role/${{ inputs.roletoassume }}
+          aws-region: us-east-1
+
+      - name: Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v1      
 
       - name: Install Dependencies
         run: |
@@ -68,9 +73,8 @@ jobs:
           docker build \
             --file Dockerfile \
             --target production \
-            -t ${{ inputs.aws_account }}.dkr.ecr.us-east-1.amazonaws.com/${{ inputs.image_name }}:${{ inputs.image_tag }} .
-          
+            -t ${{ inputs.aws_account }}.dkr.ecr.us-east-1.amazonaws.com/${{ inputs.image_name }}:${{ inputs.image_tag }} .    
 
       - name: Push Docker image
         run: |
-          docker push ${{ inputs.aws_account }}.dkr.ecr.us-east-1.amazonaws.com/${{ inputs.image_name }}:${{ inputs.image_tag }}
+          docker push ${{ inputs.aws_account }}.dkr.ecr.us-east-1.amazonaws.com/${{ inputs.image_name }}:${{ inputs.image_tag }}        

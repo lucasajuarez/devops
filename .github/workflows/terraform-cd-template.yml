@@ -1,0 +1,34 @@
+name: Terraform CD template
+
+
+on:
+    workflow_call:
+      secrets:
+        aws_access_key_id:
+          required: true
+        aws_secret_access_key:
+          required: true  
+      inputs:    
+        environment:
+          required: true
+          type: string     
+
+env:
+  tg_version: '0.53.2'
+  working_dir: 'project'
+
+jobs:
+    deploy:
+        runs-on: ubuntu-latest
+        environment: 'dev'
+        if: github.ref == 'refs/heads/develop'
+        steps:
+            - name: 'Checkout'
+              uses: actions/checkout@main
+
+            - name: Deploy
+              uses: gruntwork-io/terragrunt-action@v2
+              with:
+                tg_version: ${{ env.tg_version }}
+                tg_dir: ${{ env.working_dir }}
+                tg_command: 'apply'

@@ -1,12 +1,7 @@
 name: ECS Deploy Task Definition Template
 
 on:
-  workflow_call:
-    secrets:
-      aws_access_key_id:
-        required: true
-      aws_secret_access_key:
-        required: true     
+  workflow_call: 
     inputs:
       environment:
         required: true
@@ -28,7 +23,17 @@ on:
         type: string   
       cluster_name:
         required: true
-        type: string                 
+        type: string
+      aws_account:
+        required: true
+        type: string   
+      roletoassume:
+        required: true
+        type: string        
+        
+permissions:
+  contents: read
+  id-token: write        
 
 jobs:
   build:
@@ -36,10 +41,15 @@ jobs:
     runs-on: ubuntu-latest
     environment: ${{inputs.environment}}
     steps:
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          audience: sts.amazonaws.com
+          role-to-assume: arn:aws:iam::${{ inputs.aws_account }}:role/${{ inputs.roletoassume }}
+          aws-region: us-east-1
+
       - name: Render Amazon ECS task definition
         env:
-          AWS_ACCESS_KEY_ID: ${{ secrets.aws_access_key_id }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.aws_secret_access_key }}
           AWS_REGION: ${{ inputs.aws_region }}        
         id: render-web-container
         uses: aws-actions/amazon-ecs-render-task-definition@v1
@@ -48,11 +58,11 @@ jobs:
           container-name: ${{ inputs.container_name }} 
           image: ${{ inputs.image }} 
           environment-variables: "LOG_LEVEL=info"
+          secrets: |
+            SECRET_KEY=arn:aws:secretsmanager:us-east-1:741448950818:secret:dev/api-wallet-TCKSLQ
 
       - name: Deploy to Amazon ECS service
         env:
-          AWS_ACCESS_KEY_ID: ${{ secrets.aws_access_key_id }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.aws_secret_access_key }}
           AWS_REGION: ${{ inputs.aws_region }}         
         uses: aws-actions/amazon-ecs-deploy-task-definition@v2
         with:

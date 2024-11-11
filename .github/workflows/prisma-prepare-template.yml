@@ -1,0 +1,73 @@
+name: Prisma Prepare Test
+
+on:
+    workflow_call:
+      inputs:
+        api_port:
+          description: 'API Port'
+          type: string
+          required: true
+          default: "4000"
+        api_prefix:
+          description: 'API Prefix1'
+          type: string
+          default: v1
+
+permissions:
+  contents: read
+  pull-requests: write
+  issues: write
+  actions: read
+  packages: read
+  deployments: read
+  security-events: read
+  statuses: write
+
+jobs:
+  container-job:
+    runs-on: ubuntu-latest
+    container: node:alpine
+
+    services:
+      postgres:
+        image: postgres:latest
+        env:
+          POSTGRES_USER: wallet
+          POSTGRES_PASSWORD: wallet
+          POSTGRES_DB: wallet
+        ports:
+          - 5432:5432
+
+    steps:
+      - name: Check out repository code
+        uses: actions/checkout@v4
+
+      - name: Install dependencies
+        run: |
+          npm install context
+          npm ci
+
+      - name: Prepare Prisma
+        run: npm run prisma:prepare
+        env:
+          DATABASE_URL: "postgresql://wallet:wallet@postgres:5432/wallet?schema=public"
+          API_PORT: ${{ inputs.api_port }}
+          API_PREFIX: ${{ inputs.api_prefix }}
+          SWAGGER_ENABLE: 1
+          JWT_SECRET: secret
+          JWT_ISSUER: issuer
+          HEALTH_TOKEN: health
+
+      - name: Comment with Test Coverage
+        uses: dkershner6/jest-coverage-commenter-action@v2
+        with:
+          github_token: "${{ secrets.GITHUB_TOKEN }}"
+          test_command: |
+            echo DATABASE_URL="postgresql://wallet:wallet@postgres:5432/wallet?schema=public" >> .env
+            echo API_PORT=${{ inputs.api_port }} >> .env 
+            echo API_PREFIX=${{ inputs.api_prefix }} >> .env
+            echo SWAGGER_ENABLE=1 >> .env
+            echo JWT_SECRET=secret >> .env
+            echo JWT_ISSUER=issuer >> .env
+            echo HEALTH_TOKEN=health >> .env
+            npm run test -- --coverage  
