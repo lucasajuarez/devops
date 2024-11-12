@@ -18,10 +18,6 @@ on:
         required: true
         type: string
 
-permissions:
-  contents: read
-  id-token: write
-
 jobs:
   build:
     name: Build Docker Image
