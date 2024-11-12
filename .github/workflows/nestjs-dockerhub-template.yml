@@ -2,6 +2,11 @@ name: NestJS Docker Build and Push Template
 
 on:
   workflow_call:  
+    secrets:
+      dockerhub_username:
+        required: true
+      dockerhub_token:
+        required: true      
     inputs:
       branch:
         required: true
@@ -10,12 +15,6 @@ on:
         required: true
         type: string
       image_tag:
-        required: true
-        type: string
-      dockerhub_username:
-        required: true
-        type: string 
-      dockerhub_token:
         required: true
         type: string
 
@@ -37,8 +36,8 @@ jobs:
       - name: Log in to Docker Hub
         uses: docker/login-action@v2
         with:
-          username: ${{ inputs.dockerhub_username }}
-          password: ${{ inputs.dockerhub_token }} 
+          username: ${{ secrets.dockerhub_username }}
+          password: ${{ secrets.dockerhub_token }} 
 
       - name: Validate Image Tag
         run: |
